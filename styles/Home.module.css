@@ -1,240 +1,272 @@
-.homeContainer {
- display: flex;
- flex-direction: column;
- min-height: 100vh;
- background-color: #f4f7f6; /* Abu-abu lembut */
- color: #333;
- font-family: sans-serif;
+/* --- Global Styling & Layout Utama --- */
+.homeContainer, .waitingContainer, .connectedContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .homeMain {
- flex: 1;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- padding: 2rem;
- text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
 }
 
+/* --- Halaman Utama (Idle) --- */
 .homeTitle {
- font-size: 2.5rem;
- font-weight: bold;
- margin-bottom: 1rem;
- color: #2e7d71; /* Hijau toska */
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #2e7d71; /* Hijau Toska Tua */
 }
 
 .logo {
- color: #fdd835; /* Kuning cerah */
+  font-weight: 900;
 }
 
 .homeSubtitle {
- font-size: 1.2rem;
- color: #666;
- margin-bottom: 2rem;
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 2.5rem;
+  max-width: 400px;
 }
 
 .actionButtons {
- display: flex;
- gap: 1rem;
- margin-bottom: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
 }
 
 .card {
- background-color: #fff;
- padding: 1.5rem;
- border-radius: 8px;
- box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
- width: 300px;
- text-align: center;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .card h2 {
- margin-top: 0;
- margin-bottom: 1rem;
- color: #2e7d71;
- font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2e7d71;
+  font-size: 1.4rem;
 }
 
 .form {
- display: flex;
- flex-direction: column;
- gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .input {
- padding: 0.75rem;
- border: 1px solid #ccc;
- border-radius: 4px;
- font-size: 1rem;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  text-align: center;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.input:focus {
+  outline: 2px solid #fdd835;
+  border-color: #fdd835;
 }
 
 .joinButton, .createButton {
- padding: 0.8rem 1.5rem;
- border: none;
- border-radius: 6px;
- color: white;
- font-size: 1rem;
- cursor: pointer;
- transition: background-color 0.2s ease;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.joinButton:disabled, .createButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .joinButton {
- background-color: #2e7d71;
+  background-color: #2e7d71;
+  color: white;
+}
+.joinButton:hover:not(:disabled) {
+  background-color: #215e55;
+  transform: translateY(-2px);
 }
 
 .createButton {
- background-color: #fdd835;
- color: #333;
+  background-color: #fdd835; /* Kuning Cerah */
+  color: #333;
 }
-
-.joinButton:hover {
- background-color: #215e55;
-}
-
-.createButton:hover {
- background-color: #e0c02b;
-}
-
-.loading {
- color: #666;
- margin-top: 1rem;
+.createButton:hover:not(:disabled) {
+  background-color: #fbc02d;
+  transform: translateY(-2px);
 }
 
 .error {
- color: #d32f2f;
- margin-top: 1rem;
+  color: #c62828;
+  margin-top: 1rem;
+  font-weight: 500;
 }
 
 .footer {
- text-align: center;
- padding: 1rem;
- background-color: #eee;
- color: #777;
- font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #e9edec;
+  color: #777;
+  font-size: 0.9rem;
 }
 
-/* --- Styling untuk Waiting Room --- */
+/* --- Halaman Menunggu (Waiting) --- */
 .waitingContainer {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- min-height: 80vh;
- padding: 2rem;
- text-align: center;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .waitingTitle {
- font-size: 2rem;
- color: #2e7d71;
- margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #2e7d71;
 }
 
 .waitingSubtitle {
- font-size: 1.1rem;
- color: #666;
- margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #666;
+  margin-top: 0;
 }
 
 .roomCode {
- background-color: #fff;
- padding: 1rem 2rem;
- border-radius: 6px;
- font-size: 1.8rem;
- font-weight: bold;
- color: #333;
- margin-bottom: 1rem;
- box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 1rem 0;
+  letter-spacing: 0.2em;
+  border: 2px dashed #ddd;
 }
 
 .waitingInfo {
- color: #777;
- font-size: 1rem;
+  color: #777;
 }
 
-/* --- Styling untuk Connected Room --- */
+/* --- Halaman Terhubung (Connected) --- */
 .connectedContainer {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- min-height: 80vh;
- padding: 2rem;
- text-align: center;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .connectedTitle {
- font-size: 2.2rem;
- color: #2e7d71;
- margin-bottom: 0.5rem;
+  font-size: 2.2rem;
+  color: #2e7d71;
+  margin-bottom: 0.25rem;
 }
 
 .connectedSubtitle {
- color: #666;
- margin-bottom: 1.5rem;
+  color: #666;
+  margin-top: 0;
+  margin-bottom: 2rem;
 }
 
 .transferArea {
- display: flex;
- gap: 2rem;
+  min-height: 200px;
 }
 
 .uploadCard, .downloadCard {
- background-color: #fff;
- padding: 2rem;
- border-radius: 8px;
- box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
- text-align: center;
- width: 300px;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 320px;
 }
 
 .uploadCard h3, .downloadCard h3 {
- color: #2e7d71;
- margin-top: 0;
- margin-bottom: 1rem;
+  color: #2e7d71;
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .fileInput {
- display: none;
+  display: none;
 }
 
 .uploadButton, .downloadButton {
- padding: 0.8rem 1.5rem;
- border: none;
- border-radius: 6px;
- color: white;
- font-size: 1rem;
- cursor: pointer;
- transition: background-color 0.2s ease;
- margin-top: 1rem;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  display: inline-block;
+  text-decoration: none;
+}
+.uploadButton:hover, .downloadButton:hover {
+  transform: translateY(-2px);
 }
 
 .uploadButton {
- background-color: #fdd835;
- color: #333;
+  background-color: #fdd835;
+  color: #333;
 }
 
 .downloadButton {
- background-color: #2e7d71;
-}
-
-.uploadButton:hover {
- background-color: #e0c02b;
-}
-
-.downloadButton:hover {
- background-color: #215e55;
+  background-color: #2e7d71;
+  color: white;
 }
 
 .fileName {
- font-weight: bold;
- margin-bottom: 1rem;
- color: #333;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+  word-break: break-all;
 }
 
 .statusMessage {
- margin-top: 2rem;
- color: #666;
- font-style: italic;
+  margin-top: 1.5rem;
+  color: #555;
+  font-style: italic;
+  height: 20px;
+}
+
+/* --- Aturan CSS Khusus untuk Mobile (Responsive) --- */
+@media (max-width: 768px) {
+  .homeTitle {
+    font-size: 2rem;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .uploadCard, .downloadCard {
+    width: 90vw;
+    max-width: 400px;
+  }
 }
