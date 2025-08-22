@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabaseClient';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 
-// --- Komponen untuk Tampilan Terhubung & Upload ---
 function ConnectedRoom({ room }) {
   const [uploadStatus, setUploadStatus] = useState('');
   const [incomingFile, setIncomingFile] = useState(null);
@@ -108,9 +107,15 @@ function ConnectedRoom({ room }) {
   );
 }
 
-// --- Komponen Utama & Logika Pairing ---
 export default function HomePage() {
-  const [room, setRoom] = useState(null);
+  const [room, setRoom] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedRoom = sessionStorage.getItem('laju-room');
+      return savedRoom ? JSON.parse(savedRoom) : null;
+    }
+    return null;
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -126,6 +131,14 @@ export default function HomePage() {
     }
     return null;
   });
+
+  useEffect(() => {
+    if (room) {
+      sessionStorage.setItem('laju-room', JSON.stringify(room));
+    } else {
+      sessionStorage.removeItem('laju-room');
+    }
+  }, [room]);
 
   useEffect(() => {
     if (!room?.id) return;
@@ -192,8 +205,6 @@ export default function HomePage() {
       setIsLoading(false);
     } else {
       setRoom(foundRoom);
-      // isLoading akan false setelah status room ter-update via realtime
-      // Namun untuk UX yang lebih baik, kita matikan di sini juga
       setIsLoading(false);
     }
   };
