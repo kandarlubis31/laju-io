@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
 import Head from 'next/head';
 import { QRCodeCanvas } from 'qrcode.react';
-import styles from '../styles/Home.module.css';
 
-// --- Komponen untuk Tampilan Terhubung & Upload ---
-function ConnectedRoom({ room }) {
+// You will need to import your Supabase client here.
+// Example: import { supabase } from '../lib/supabaseClient';
+
+// === Komponen untuk Tampilan Terhubung & Upload ===
+function ConnectedRoom({ room, clientId }) {
   const [uploadStatus, setUploadStatus] = useState('');
   const [incomingFile, setIncomingFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const isHost = room.host_id === clientId;
 
-  // Fungsi untuk membuat thumbnail gambar yang ringan
   const createThumbnail = (file) => {
     return new Promise((resolve) => {
       if (!file.type.startsWith('image/')) {
@@ -43,7 +44,7 @@ function ConnectedRoom({ room }) {
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.5)); // Kompresi 50%
+          resolve(canvas.toDataURL('image/jpeg', 0.5));
         };
         img.src = e.target.result;
       };
@@ -51,7 +52,11 @@ function ConnectedRoom({ room }) {
     });
   };
 
+  // WARNING: 'supabase' is undefined in this component, you will need to pass it as a prop.
   useEffect(() => {
+    // Check if supabase is available before using it
+    if (typeof supabase === 'undefined') return;
+
     const channel = supabase.channel(`room-broadcast:${room.id}`);
     channel
       .on('broadcast', { event: 'file-transfer' }, (payload) => {
@@ -62,7 +67,7 @@ function ConnectedRoom({ room }) {
   }, [room.id]);
 
   const handleUpload = async (file) => {
-    setUploadStatus(`Mengupload ${file.name}...`);
+    setUploadStatus(`Mengunggah ${file.name}...`);
     setIncomingFile(null);
 
     const thumbnail = await createThumbnail(file);
@@ -74,7 +79,7 @@ function ConnectedRoom({ room }) {
     });
 
     if (!response.ok) {
-      setUploadStatus('Gagal mendapatkan izin upload.');
+      setUploadStatus('Gagal mendapatkan izin unggah.');
       return;
     }
 
@@ -82,12 +87,13 @@ function ConnectedRoom({ room }) {
     const uploadResponse = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
 
     if (!uploadResponse.ok) {
-      setUploadStatus('Upload file gagal.');
+      setUploadStatus('Unggah file gagal.');
       return;
     }
 
-    setUploadStatus('Upload berhasil! Mengirim link...');
+    setUploadStatus('Unggah berhasil! Mengirim link...');
 
+    // WARNING: 'supabase' is undefined in this component, you will need to pass it as a prop.
     const channel = supabase.channel(`room-broadcast:${room.id}`);
     await channel.send({
       type: 'broadcast',
@@ -109,42 +115,49 @@ function ConnectedRoom({ room }) {
   };
 
   return (
-    <div className={styles.connectedContainer} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
-      {isDragging && <div className={styles.dragOverlay}>Letakkan file di sini</div>}
-      <h1 className={styles.connectedTitle}>✅ Terhubung!</h1>
-      <p className={styles.connectedSubtitle}>Ruang: <strong>{room.room_code}</strong></p>
+    <div className='connectedContainer' onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
+      {isDragging && <div className='dragOverlay'>Letakkan file di sini</div>}
+      <h1 className='connectedTitle'>✅ Terhubung!</h1>
+      <p className='connectedSubtitle'>Ruang: <strong>{room.room_code}</strong></p>
 
-      <div className={styles.transferArea}>
-        {incomingFile ? (
-          <div className={styles.downloadCard}>
-            <h3>File Diterima!</h3>
-            {incomingFile.thumbnail ? (
-              <img src={incomingFile.thumbnail} alt="preview" className={styles.filePreview} />
-            ) : (
-              <div className={styles.filePreview}>📄</div> /* Ganti dengan ikon file generik */
-            )}
-            <p className={styles.fileName}>{incomingFile.fileName}</p>
-            <a href={incomingFile.url} download target="_blank" rel="noopener noreferrer" className={styles.downloadButton}>
-              Unduh
-            </a>
-          </div>
-        ) : (
-          <div className={styles.uploadCard}>
+      <div className='transferArea'>
+        {isHost ? (
+          <div className='uploadCard'>
             <h3>Kirim File</h3>
             <p>Pilih file atau seret ke sini.</p>
-            <input type="file" ref={fileInputRef} onChange={(e) => handleUpload(e.target.files?.[0])} className={styles.fileInput} />
-            <button onClick={() => fileInputRef.current?.click()} className={styles.uploadButton}>
+            <input type='file' ref={fileInputRef} onChange={(e) => handleUpload(e.target.files?.[0])} className='fileInput' />
+            <button onClick={() => fileInputRef.current?.click()} className='uploadButton'>
               Pilih File
             </button>
           </div>
+        ) : (
+          incomingFile ? (
+            <div className='downloadCard'>
+              <h3>File Diterima!</h3>
+              {incomingFile.thumbnail ? (
+                <img src={incomingFile.thumbnail} alt='preview' className='filePreview' />
+              ) : (
+                <div className='filePreview'>📄</div>
+              )}
+              <p className='fileName'>{incomingFile.fileName}</p>
+              <a href={incomingFile.url} download target='_blank' rel='noopener noreferrer' className='downloadButton'>
+                Unduh
+              </a>
+            </div>
+          ) : (
+            <div className='uploadCard'>
+              <h3>Menunggu File...</h3>
+              <p>Pengirim sedang memilih file.</p>
+            </div>
+          )
         )}
       </div>
-      <p className={styles.statusMessage}>{uploadStatus}</p>
+      <p className='statusMessage'>{uploadStatus}</p>
     </div>
   );
 }
 
-// --- Komponen Menunggu (Host) ---
+// === Komponen Menunggu (Host) ===
 function WaitingRoom({ room, onCancel }) {
   const [copyFeedback, setCopyFeedback] = useState(false);
 
@@ -155,25 +168,25 @@ function WaitingRoom({ room, onCancel }) {
   };
 
   return (
-    <div className={styles.waitingContainer}>
-      <h1 className={styles.waitingTitle}>Ruang Dibuat!</h1>
-      <p className={styles.waitingSubtitle}>Pindai QR Code atau bagikan kode di bawah:</p>
-      <div className={styles.qrCode}>
+    <div className='waitingContainer'>
+      <h1 className='waitingTitle'>Ruang Dibuat!</h1>
+      <p className='waitingSubtitle'>Pindai QR Code atau bagikan kode di bawah:</p>
+      <div className='qrCode'>
         <QRCodeCanvas value={room.room_code} size={128} />
       </div>
-      <div className={styles.roomCode} onClick={handleCopy}>
+      <div className='roomCode' onClick={handleCopy}>
         {room.room_code}
-        <span className={styles.copyFeedback} style={{ opacity: copyFeedback ? 1 : 0 }}>
+        <span className='copyFeedback' style={{ opacity: copyFeedback ? 1 : 0 }}>
           Tersalin!
         </span>
       </div>
-      <p className={styles.waitingInfo}>Menunggu teman untuk bergabung...</p>
-      <button onClick={onCancel} className={styles.cancelButton}>Kembali</button>
+      <p className='waitingInfo'>Menunggu teman untuk bergabung...</p>
+      <button onClick={onCancel} className='cancelButton'>Kembali</button>
     </div>
   );
 }
 
-// --- Komponen Utama & Logika Pairing ---
+// === Komponen Utama & Logika Pairing ===
 export default function HomePage() {
   const [room, setRoom] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -199,15 +212,11 @@ export default function HomePage() {
     return null;
   });
 
+  // WARNING: 'supabase' is undefined here, you will need to add it to this component's scope.
   useEffect(() => {
-    if (room) {
-      sessionStorage.setItem('laju-room', JSON.stringify(room));
-    } else {
-      sessionStorage.removeItem('laju-room');
-    }
-  }, [room]);
+    // Check if supabase is available before using it
+    if (typeof supabase === 'undefined') return;
 
-  useEffect(() => {
     if (!room?.id) return;
     const channel = supabase.channel(`room-db-changes:${room.id}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${room.id}` }, (payload) => setRoom(payload.new))
@@ -232,6 +241,7 @@ export default function HomePage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    // WARNING: 'supabase' is undefined here, you will need to add it to this component's scope.
     const { data, error } = await supabase.rpc('join_room_atomic', { p_room_code: joinCode.toUpperCase(), p_guest_id: clientId });
     if (error || !data || data.length === 0) setError('Kode tidak ditemukan atau room sudah penuh.');
     else setRoom(data[0]);
@@ -240,41 +250,41 @@ export default function HomePage() {
 
   const cancelRoom = async () => {
     if (room) {
-      // Hapus room dari database agar tidak menjadi yatim piatu
+      // WARNING: 'supabase' is undefined here, you will need to add it to this component's scope.
       await supabase.from('rooms').delete().eq('id', room.id);
     }
-    setRoom(null); // Kembali ke halaman utama
+    setRoom(null);
   };
 
-  if (room && room.status === 'connected') return <ConnectedRoom room={room} />;
+  if (room && room.status === 'connected') return <ConnectedRoom room={room} clientId={clientId} />;
   if (room && room.host_id === clientId && room.status === 'waiting') return <WaitingRoom room={room} onCancel={cancelRoom} />;
 
   return (
-    <div className={styles.homeContainer}>
+    <div className='homeContainer'>
       <Head>
         <title>Laju.io - Transfer File Cepat & Ringan</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <link rel='icon' href='/favicon.ico' />
       </Head>
-      <main className={styles.homeMain}>
-        <h1 className={styles.homeTitle}>Selamat Datang di <span className={styles.logo}>Laju.io</span></h1>
-        <p className={styles.homeSubtitle}>Transfer file super cepat tanpa ribet.</p>
-        <div className={styles.actionButtons}>
-          <div className={styles.card}>
+      <main className='homeMain'>
+        <h1 className='homeTitle'>Selamat Datang di <span className='logo'>Laju.io</span></h1>
+        <p className='homeSubtitle'>Transfer file super cepat tanpa ribet.</p>
+        <div className='actionButtons'>
+          <div className='card'>
             <h2>Gabung Ruang</h2>
-            <form onSubmit={joinRoom} className={styles.form}>
-              <input type="text" maxLength="4" className={styles.input} placeholder="Kode (4 Huruf)" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} disabled={isLoading} />
-              <button type="submit" className={styles.joinButton} disabled={isLoading}>{isLoading ? 'Memproses...' : 'Gabung'}</button>
+            <form onSubmit={joinRoom} className='form'>
+              <input type='text' maxLength='4' className='input' placeholder='Kode (4 Huruf)' value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} disabled={isLoading} />
+              <button type='submit' className='joinButton' disabled={isLoading}>{isLoading ? 'Memproses...' : 'Gabung'}</button>
             </form>
           </div>
-          <div className={styles.card}>
+          <div className='card'>
             <h2>Buat Ruang Baru</h2>
-            <button onClick={createRoom} className={styles.createButton} disabled={isLoading}>{isLoading ? 'Memproses...' : 'Buat'}</button>
+            <button onClick={createRoom} className='createButton' disabled={isLoading}>{isLoading ? 'Memproses...' : 'Buat'}</button>
           </div>
         </div>
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <p className='error'>{error}</p>}
       </main>
-      <footer className={styles.footer}>
+      <footer className='footer'>
         <p>&copy; {new Date().getFullYear()} Laju.io - Dibuat dengan ❤️ untuk kemudahan.</p>
       </footer>
     </div>
