@@ -3,100 +3,153 @@ import { supabase } from '../lib/supabaseClient';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 
+// Komponen baru untuk tampilan saat terhubung, biar lebih rapi
+function ConnectedRoom({ room }) {
+  return (
+    <div className={styles.container}>
+      <main className={styles.main}>
+        <h1 className={styles.title}>✅ Terhubung!</h1>
+        <p>
+          Anda sekarang terhubung di ruang <strong>{room.room_code}</strong>.
+        </p>
+        <p>Siap untuk mengirim file.</p>
+        {/* Di sini nanti kita letakkan komponen untuk upload file */}
+      </main>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [room, setRoom] = useState(null);
-  const [isHost, setIsHost] = useState(false);
-  const [status, setStatus] = useState('idle');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [clientId] = useState(() => Math.random().toString(36).substring(2));
+  
+  // ID unik untuk setiap browser/device, agar tahu siapa host & guest
+  const [clientId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      let id = sessionStorage.getItem('clientId');
+      if (!id) {
+        id = Math.random().toString(36).substring(2, 10);
+        sessionStorage.setItem('clientId', id);
+      }
+      return id;
+    }
+    return null;
+  });
 
+  // INI BAGIAN PALING PENTING: PENDENGAR REAL-TIME
   useEffect(() => {
-    if (!room) return;
+    // Hanya mulai "nguping" kalau sudah ada di dalam sebuah room
+    if (!room || !room.id) return;
+
+    console.log(`Sekarang mendengarkan perubahan pada room ID: ${room.id}`);
 
     const channel = supabase
       .channel(`room:${room.id}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${room.id}` },
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${room.id}`, // Filter: hanya peduli pada room ini
+        },
         (payload) => {
-          console.log('Room updated!', payload.new);
+          // Ketika ada update, langsung perbarui state 'room' kita
+          console.log('Update diterima dari Supabase!', payload.new);
           setRoom(payload.new);
-          if (payload.new.status === 'connected') {
-            setStatus('connected');
-          }
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Berhasil terhubung ke channel realtime!');
+        }
+        if (err) {
+          console.error('Gagal subscribe ke channel:', err);
+        }
+      });
 
+    // Fungsi bersih-bersih: berhenti "nguping" kalau keluar dari halaman
     return () => {
+      console.log('Berhenti mendengarkan channel.');
       supabase.removeChannel(channel);
     };
-  }, [room]);
+  }, [room?.id]); // Dependency diubah ke room.id, lebih stabil
 
   const createRoom = async () => {
-    setStatus('loading');
+    setIsLoading(true);
+    setError('');
     const response = await fetch('/api/create-room', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hostId: clientId }),
     });
-    const newRoom = await response.json();
-    setRoom(newRoom);
-    setIsHost(true);
-    setStatus('waiting');
+    
+    if(response.ok) {
+      const newRoom = await response.json();
+      setRoom(newRoom);
+    } else {
+      setError('Gagal membuat room, coba lagi.');
+    }
+    setIsLoading(false);
   };
 
   const joinRoom = async (e) => {
     e.preventDefault();
-    setStatus('loading');
+    setIsLoading(true);
+    setError('');
 
-    const { data, error } = await supabase
+    // 1. Cari dulu room yang mau digabung
+    const { data: foundRoom, error: selectError } = await supabase
       .from('rooms')
       .select('*')
       .eq('room_code', joinCode.toUpperCase())
-      .eq('status', 'waiting')
+      .eq('status', 'waiting') // Hanya bisa join yang statusnya 'waiting'
       .single();
 
-    if (data) {
-      const { error: updateError } = await supabase
-        .from('rooms')
-        .update({ guest_id: clientId, status: 'connected' })
-        .eq('id', data.id);
-
-      if (!updateError) {
-        setRoom(data);
-        setStatus('connected');
-      } else {
-        setStatus('error');
-      }
-    } else {
-      setStatus('error');
+    if (selectError || !foundRoom) {
+      setError('Kode tidak ditemukan atau room sudah penuh.');
+      setIsLoading(false);
+      return;
     }
+    
+    // 2. Jika ketemu, update statusnya jadi 'connected'
+    const { error: updateError } = await supabase
+      .from('rooms')
+      .update({ guest_id: clientId, status: 'connected' })
+      .eq('id', foundRoom.id);
+
+    if (updateError) {
+      setError('Gagal terhubung ke room.');
+      setIsLoading(false);
+    } else {
+      // PENTING: Setelah update, kita set state room-nya di sini
+      // agar useEffect bisa langsung mulai "nguping" perubahan.
+      // Tampilan akan berubah setelah siaran UPDATE diterima.
+      setRoom(foundRoom);
+    }
+    // Biarkan isLoading tetap true, nanti akan false setelah room ter-update
   };
 
-  if (status === 'connected') {
-    return (
-      <div className={styles.container}>
-        <main className={styles.main}>
-          <h1 className={styles.title}>Terhubung!</h1>
-          <p>Kalian sekarang terhubung di ruang {room.room_code}. Siap untuk kirim file.</p>
-          {/* Di sini nanti kita taro komponen upload file */}
-        </main>
-      </div>
-    )
+  // Logika untuk menentukan tampilan mana yang harus muncul
+  if (room && room.status === 'connected') {
+    return <ConnectedRoom room={room} />;
   }
 
-  if (status === 'waiting' && isHost) {
+  const isHost = room && room.host_id === clientId;
+
+  if (isHost && room.status === 'waiting') {
     return (
       <div className={styles.container}>
         <main className={styles.main}>
           <h1 className={styles.title}>Ruang Dibuat!</h1>
-          <p>Minta temanmu memasukkan kode ini:</p>
+          <p>Minta temanmu memasukkan kode ini di device mereka:</p>
           <div className={styles.codeBox}>{room.room_code}</div>
-          <p>Menunggu pasangan...</p>
+          <p className={styles.status}>Menunggu pasangan...</p>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -112,21 +165,23 @@ export default function HomePage() {
             <form onSubmit={joinRoom}>
               <input
                 type="text"
+                maxLength="4"
                 className={styles.input}
-                placeholder="Masukkan Kode"
+                placeholder="ABCD"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
+                disabled={isLoading}
               />
-              <button type="submit">Gabung</button>
+              <button type="submit" disabled={isLoading}>Gabung</button>
             </form>
           </div>
           <div className={styles.card}>
             <h2>Atau Buat Ruang Baru</h2>
-            <button onClick={createRoom}>Buat Ruang</button>
+            <button onClick={createRoom} disabled={isLoading}>Buat Ruang</button>
           </div>
         </div>
-        {status === 'loading' && <p>Loading...</p>}
-        {status === 'error' && <p>Kode tidak ditemukan atau ruang sudah penuh.</p>}
+        {isLoading && <p className={styles.status}>Loading...</p>}
+        {error && <p className={styles.error}>{error}</p>}
       </main>
     </div>
   );
