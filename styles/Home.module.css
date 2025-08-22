@@ -1,12 +1,30 @@
+/* --- Variabel CSS untuk Konsistensi --- */
+:root {
+  --primary-color: #2e7d71;
+  --primary-dark: #215e55;
+  --secondary-color: #fdd835;
+  --secondary-dark: #fbc02d;
+  --background-color: #f4f7f6;
+  --card-background: #ffffff;
+  --text-color: #333;
+  --text-light: #555;
+  --text-lighter: #777;
+  --error-color: #c62828;
+  --success-color: #2e7d71;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s ease;
+}
+
 /* --- Global Styling & Layout Utama --- */
 .homeContainer, .waitingContainer, .connectedContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f4f7f6;
-  color: #333;
+  background-color: var(--background-color);
+  color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.3s ease;
+  transition: var(--transition);
 }
 
 .homeMain {
@@ -24,7 +42,11 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: #2e7d71; /* Hijau Toska Tua */
+  color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .logo {
@@ -33,9 +55,10 @@
 
 .homeSubtitle {
   font-size: 1.2rem;
-  color: #555;
+  color: var(--text-light);
   margin-bottom: 2.5rem;
   max-width: 400px;
+  line-height: 1.5;
 }
 
 .actionButtons {
@@ -45,91 +68,144 @@
   width: 100%;
   justify-content: center;
   align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .card {
-  background-color: #ffffff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-background);
+  padding: 1.8rem 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   width: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .card h2 {
   margin-top: 0;
-  margin-bottom: 1rem;
-  color: #2e7d71;
+  margin-bottom: 1.2rem;
+  color: var(--primary-color);
   font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .input {
-  padding: 0.8rem;
+  padding: 0.9rem;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1.1rem;
   text-align: center;
   letter-spacing: 0.3em;
   text-transform: uppercase;
+  transition: var(--transition);
+  font-weight: 600;
 }
+
 .input:focus {
-  outline: 2px solid #fdd835;
-  border-color: #fdd835;
+  outline: 2px solid var(--secondary-color);
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(253, 216, 53, 0.2);
 }
 
 .joinButton, .createButton {
-  padding: 0.8rem 1.5rem;
+  padding: 0.9rem 1.5rem;
   border: none;
   border-radius: 8px;
-  color: #333;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
 }
+
 .joinButton:disabled, .createButton:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none !important;
+}
+
+.joinButton:after, .createButton:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.joinButton:focus:not(:active)::after,
+.createButton:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
 }
 
 .joinButton {
-  background-color: #2e7d71;
+  background-color: var(--primary-color);
   color: white;
 }
+
 .joinButton:hover:not(:disabled) {
-  background-color: #215e55;
+  background-color: var(--primary-dark);
   transform: translateY(-2px);
 }
 
 .createButton {
-  background-color: #fdd835; /* Kuning Cerah */
-  color: #333;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
 }
+
 .createButton:hover:not(:disabled) {
-  background-color: #fbc02d;
+  background-color: var(--secondary-dark);
   transform: translateY(-2px);
 }
 
 .error {
-  color: #c62828;
+  color: var(--error-color);
   margin-top: 1rem;
   font-weight: 500;
+  padding: 0.8rem 1.2rem;
+  background-color: rgba(198, 40, 40, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid var(--error-color);
+  max-width: 400px;
 }
 
 .footer {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1.8rem;
   background-color: #e9edec;
-  color: #777;
+  color: var(--text-lighter);
   font-size: 0.9rem;
+  margin-top: auto;
 }
 
 /* --- Halaman Menunggu (Waiting) --- */
@@ -137,100 +213,121 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .waitingTitle {
-  font-size: 2rem;
-  color: #2e7d71;
+  font-size: 2.2rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
 }
 
 .waitingSubtitle {
   font-size: 1.1rem;
-  color: #666;
+  color: var(--text-light);
   margin-top: 0;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .qrCode {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--card-background);
+  padding: 1.2rem;
+  border-radius: var(--border-radius);
+  margin: 1.2rem 0;
+  box-shadow: var(--box-shadow);
+  display: inline-block;
 }
 
 .roomCode {
-  background-color: #ffffff;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 2.5rem;
+  background-color: var(--card-background);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-size: 2.2rem;
   font-weight: 700;
-  color: #333;
-  margin-top: 1rem;
+  color: var(--text-color);
+  margin: 1.2rem 0;
   letter-spacing: 0.2em;
   border: 2px dashed #ddd;
   cursor: pointer;
   position: relative;
+  transition: var(--transition);
+  display: inline-block;
+  user-select: all;
+}
+
+.roomCode:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(46, 125, 113, 0.05);
 }
 
 .copyFeedback {
   position: absolute;
-  bottom: -25px;
+  bottom: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
+  background-color: var(--text-color);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
   font-size: 0.8rem;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .waitingInfo {
-  color: #777;
-  margin-top: 1rem;
+  color: var(--text-lighter);
+  margin-top: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .cancelButton {
   margin-top: 1.5rem;
   background: none;
   border: 1px solid #aaa;
-  color: #555;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  color: var(--text-light);
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9rem;
-}
-.cancelButton:hover {
-  background-color: #e0e0e0;
+  font-size: 0.95rem;
+  transition: var(--transition);
 }
 
+.cancelButton:hover {
+  background-color: #f0f0f0;
+  border-color: #888;
+}
 
 /* --- Halaman Terhubung (Connected) --- */
 .connectedContainer {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
+  position: relative;
 }
 
 .connectedTitle {
   font-size: 2.2rem;
-  color: #2e7d71;
-  margin-bottom: 0.25rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
 }
 
 .connectedSubtitle {
-  color: #666;
+  color: var(--text-light);
   margin-top: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 2.2rem;
+  font-size: 1.1rem;
 }
 
 .transferArea {
-  min-height: 250px;
-  width: 320px;
+  min-height: 280px;
+  width: 340px;
   position: relative;
+  margin-bottom: 1.5rem;
 }
 
 .dragOverlay {
@@ -240,23 +337,24 @@
   right: 0;
   bottom: 0;
   background-color: rgba(46, 125, 113, 0.1);
-  border: 2px dashed #2e7d71;
-  border-radius: 12px;
+  border: 2px dashed var(--primary-color);
+  border-radius: var(--border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #215e55;
-  pointer-events: none; /* Penting! */
+  color: var(--primary-dark);
+  pointer-events: none;
   z-index: 10;
+  backdrop-filter: blur(2px);
 }
 
 .uploadCard, .downloadCard {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-background);
+  padding: 2.2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   text-align: center;
   width: 100%;
   height: 100%;
@@ -264,12 +362,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: var(--transition);
 }
 
 .uploadCard h3, .downloadCard h3 {
-  color: #2e7d71;
+  color: var(--primary-color);
   margin-top: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
 }
 
 .fileInput {
@@ -277,51 +377,149 @@
 }
 
 .uploadButton, .downloadButton {
-  padding: 0.8rem 2rem;
+  padding: 0.9rem 2rem;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 1rem;
+  transition: var(--transition);
+  margin-top: 1.2rem;
   display: inline-block;
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
 }
+
 .uploadButton:hover, .downloadButton:hover {
   transform: translateY(-2px);
 }
 
 .uploadButton {
-  background-color: #fdd835;
-  color: #333;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.uploadButton:hover {
+  background-color: var(--secondary-dark);
 }
 
 .downloadButton {
-  background-color: #2e7d71;
+  background-color: var(--primary-color);
   color: white;
 }
 
+.downloadButton:hover {
+  background-color: var(--primary-dark);
+}
+
 .filePreview {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  background-color: #eee;
+  border-radius: 10px;
+  margin-bottom: 1.2rem;
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+}
+
+.fileIcon {
+  font-size: 3.5rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .fileName {
   font-weight: 600;
-  color: #333;
-  word-break: break-all;
+  color: var(--text-color);
+  word-break: break-word;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+  max-width: 250px;
+}
+
+.fileSize {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 1rem;
 }
 
 .statusMessage {
   margin-top: 1.5rem;
-  color: #555;
+  color: var(--text-light);
   font-style: italic;
-  height: 20px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+/* Progress Bar Styles */
+.progressBar {
+  width: 100%;
+  height: 22px;
+  background-color: #f0f0f0;
+  border-radius: 11px;
+  margin: 1.2rem 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: 11px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 5px rgba(46, 125, 113, 0.4);
+}
+
+.progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 0.8rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.backButton {
+  margin-top: 1rem;
+  background: none;
+  border: 1px solid #aaa;
+  color: var(--text-light);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.backButton:hover {
+  background-color: #f0f0f0;
+  border-color: #888;
+}
+
+/* Animation for file transfer */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.downloadCard {
+  animation: pulse 0.5s ease;
 }
 
 /* --- Aturan CSS Khusus untuk Mobile (Responsive) --- */
@@ -329,21 +527,113 @@
   .homeTitle {
     font-size: 2rem;
   }
+  
+  .homeSubtitle {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
 
   .actionButtons {
     flex-direction: column;
     width: 100%;
     max-width: 400px;
     padding: 0 1rem;
-    gap: 1rem;
+    gap: 1.2rem;
   }
 
   .card {
     width: 100%;
+    padding: 1.5rem;
   }
-
-  .uploadCard, .downloadCard {
+  
+  .waitingContainer, .connectedContainer {
+    padding: 1.2rem;
+  }
+  
+  .roomCode {
+    font-size: 1.8rem;
+    padding: 0.7rem 1.2rem;
+  }
+  
+  .transferArea {
     width: 90vw;
     max-width: 400px;
+  }
+  
+  .uploadCard, .downloadCard {
+    padding: 1.8rem;
+    width: 100%;
+  }
+  
+  .filePreview, .fileIcon {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .fileName {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .homeTitle {
+    font-size: 1.8rem;
+  }
+  
+  .homeMain {
+    padding: 1.5rem 1rem;
+  }
+  
+  .card h2 {
+    font-size: 1.3rem;
+  }
+  
+  .input {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+  
+  .joinButton, .createButton {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.95rem;
+  }
+  
+  .waitingTitle, .connectedTitle {
+    font-size: 1.8rem;
+  }
+  
+  .roomCode {
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+  }
+  
+  .uploadButton, .downloadButton {
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #1a1a1a;
+    --card-background: #2d2d2d;
+    --text-color: #f0f0f0;
+    --text-light: #cccccc;
+    --text-lighter: #aaaaaa;
+  }
+  
+  .footer {
+    background-color: #252525;
+  }
+  
+  .input {
+    background-color: #3a3a3a;
+    border-color: #444;
+    color: #f0f0f0;
+  }
+  
+  .filePreview, .fileIcon {
+    background-color: #3a3a3a;
+    border-color: #444;
   }
 }
