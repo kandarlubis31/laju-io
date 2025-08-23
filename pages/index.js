@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { QRCodeCanvas } from 'qrcode.react';
 import JSZip from 'jszip';
 import toast, { Toaster } from 'react-hot-toast';
-import { Upload, Download, Share2, Copy, Check, AlertCircle, Wifi, WifiOff, File as FileIcon, Image as ImageIcon, Video, Music, Archive, X, CheckCircle, Info } from 'lucide-react';
+import { Upload, Download, Share2, Copy, Check, X, File as FileIcon, Image as ImageIcon, Video, Music, Archive, Wifi, WifiOff } from 'lucide-react';
 
 // === UTILITY FUNCTIONS ===
 const createThumbnail = (file) => {
@@ -80,8 +80,10 @@ const useRoomManagement = (clientId) => {
       const roomData = await response.json();
       setRoom(roomData);
       toast.success('Room berhasil dibuat!', { id: toastId });
+      return { success: true };
     } catch (error) {
       toast.error(error.message, { id: toastId });
+      return { success: false, error: error.message };
     }
   }, [clientId]);
 
@@ -92,8 +94,10 @@ const useRoomManagement = (clientId) => {
       if (error || !data || data.length === 0) throw new Error('Kode ruang tidak ditemukan atau sudah penuh.');
       setRoom(data[0]);
       toast.success(`Berhasil bergabung ke room ${roomCode}!`, { id: toastId });
+      return { success: true };
     } catch (error) {
       toast.error(error.message, { id: toastId });
+      return { success: false, error: error.message };
     }
   }, [clientId]);
 
@@ -139,7 +143,7 @@ function ConnectedRoom({ room, connectionStatus }) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   useEffect(() => {
     const channel = supabase.channel(`room-broadcast:${room.id}`);
     channel
@@ -229,9 +233,8 @@ function ConnectedRoom({ room, connectionStatus }) {
   return (
     <div className="app-container" onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
       <div className="connection-status">
-        <div className={`status-indicator ${connectionStatus === 'connected' ? 'status-connected' : 'status-disconnected'}`} />
-        {connectionStatus === 'connected' ? <Wifi size={16} /> : <WifiOff size={16} />}
-        <span className="text-sm font-medium">{connectionStatus === 'connected' ? 'Terhubung' : 'Terputus'}</span>
+        <div className={`status-indicator ${connectionStatus === 'connected' ? 'status-connected' : connectionStatus === 'reconnecting' ? 'status-reconnecting' : 'status-disconnected'}`} />
+        <span className="text-sm font-medium">{connectionStatus}</span>
       </div>
       <div className="main-content">
         <div className="page-header"><h1 className="page-title"><CheckCircle size={48} className="inline mr-4 text-emerald-500"/>Terhubung!</h1><p className="page-subtitle">Ruang: <span className="font-bold text-teal-600">{room.room_code}</span></p></div>
