@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient'; // Pastikan path ini benar
+import { supabase } from '../lib/supabaseClient';
 import Head from 'next/head';
 import Image from 'next/image';
 import { QRCodeCanvas } from 'qrcode.react';
 import JSZip from 'jszip';
 import toast, { Toaster } from 'react-hot-toast';
-import { Upload, Download, Share2, Copy, Check, X, File as FileIcon, Image as ImageIcon, Video, Music, Archive, Wifi, WifiOff } from 'lucide-react';
+import { Upload, Download, Share2, Copy, Check, X, File as FileIcon, Image as ImageIcon, Video, Music, Archive, Wifi, WifiOff, CheckCircle } from 'lucide-react';
 
 // === UTILITY FUNCTIONS ===
 const createThumbnail = (file) => {
@@ -43,30 +43,28 @@ const formatFileSize = (bytes) => {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 };
 
-const getFileIcon = (fileType) => {
-  if (fileType?.startsWith('image/')) return <ImageIcon size={32} className="text-blue-500" />;
-  if (fileType?.startsWith('video/')) return <Video size={32} className="text-red-500" />;
-  if (fileType?.startsWith('audio/')) return <Music size={32} className="text-green-500" />;
-  if (fileType?.includes('zip') || fileType?.includes('archive')) return <Archive size={32} className="text-yellow-500" />;
-  return <FileIcon size={32} className="text-gray-500" />;
-};
-
 // === CUSTOM HOOK ===
 const useRoomManagement = (clientId) => {
-  const [room, setRoom] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedRoom = sessionStorage.getItem('laju-room');
-      return savedRoom ? JSON.parse(savedRoom) : null;
-    }
-    return null;
-  });
-
+  const [room, setRoom] = useState(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
 
   useEffect(() => {
-    if (room) sessionStorage.setItem('laju-room', JSON.stringify(room));
-    else sessionStorage.removeItem('laju-room');
-  }, [room]);
+    if (clientId && isInitialLoad) {
+      const savedRoom = sessionStorage.getItem('laju-room');
+      if (savedRoom) {
+        setRoom(JSON.parse(savedRoom));
+      }
+      setIsInitialLoad(false);
+    }
+  }, [clientId, isInitialLoad]);
+
+  useEffect(() => {
+    if (!isInitialLoad) {
+        if (room) sessionStorage.setItem('laju-room', JSON.stringify(room));
+        else sessionStorage.removeItem('laju-room');
+    }
+  }, [room, isInitialLoad]);
 
   const createRoom = useCallback(async () => {
     const toastId = toast.loading('Membuat room...');
@@ -80,10 +78,8 @@ const useRoomManagement = (clientId) => {
       const roomData = await response.json();
       setRoom(roomData);
       toast.success('Room berhasil dibuat!', { id: toastId });
-      return { success: true };
     } catch (error) {
       toast.error(error.message, { id: toastId });
-      return { success: false, error: error.message };
     }
   }, [clientId]);
 
@@ -94,10 +90,8 @@ const useRoomManagement = (clientId) => {
       if (error || !data || data.length === 0) throw new Error('Kode ruang tidak ditemukan atau sudah penuh.');
       setRoom(data[0]);
       toast.success(`Berhasil bergabung ke room ${roomCode}!`, { id: toastId });
-      return { success: true };
     } catch (error) {
       toast.error(error.message, { id: toastId });
-      return { success: false, error: error.message };
     }
   }, [clientId]);
 
@@ -134,7 +128,13 @@ function FilePreview({ file }) {
   if (file.thumbnail) {
     return <Image src={file.thumbnail} alt="Pratinjau file" className="file-preview mx-auto" width={120} height={120} />;
   }
-  return <div className="file-icon-area bg-gray-100 mx-auto">{getFileIcon(file.type)}</div>;
+  const type = file.type || '';
+  let icon = <FileIcon size={48} className="text-gray-500" />;
+  if (type.startsWith('image/')) icon = <ImageIcon size={48} className="text-blue-500" />;
+  if (type.startsWith('video/')) icon = <Video size={48} className="text-red-500" />;
+  if (type.startsWith('audio/')) icon = <Music size={48} className="text-green-500" />;
+  if (type.includes('zip') || type.includes('archive')) icon = <Archive size={48} className="text-yellow-500" />;
+  return <div className="file-icon-area bg-gray-100 mx-auto">{icon}</div>;
 }
 
 function ConnectedRoom({ room, connectionStatus }) {
@@ -143,7 +143,7 @@ function ConnectedRoom({ room, connectionStatus }) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-
+  
   useEffect(() => {
     const channel = supabase.channel(`room-broadcast:${room.id}`);
     channel
@@ -193,7 +193,9 @@ function ConnectedRoom({ room, connectionStatus }) {
         if (event.lengthComputable) {
           const percent = (event.loaded / event.total) * 100;
           setUploadProgress(percent);
-          toast.loading(`Mengupload ${originalFileName}... ${Math.round(percent)}%`, { id: toastId });
+          if (percent < 100) {
+            toast.loading(`Mengupload ${originalFileName}... ${Math.round(percent)}%`, { id: toastId });
+          }
         }
       };
 
@@ -223,7 +225,7 @@ function ConnectedRoom({ room, connectionStatus }) {
   }, [room.id]);
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = (e) => { e.preventDefault(); if (!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -298,15 +300,16 @@ const WaitingRoom = ({ room, onCancel }) => {
 export default function LajuApp() {
   const [isLoading, setIsLoading] = useState(false);
   const [joinCode, setJoinCode] = useState('');
+  const [clientId, setClientId] = useState(null);
 
-  const [clientId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      let id = sessionStorage.getItem('clientId');
-      if (!id) { id = Math.random().toString(36).substring(2, 10); sessionStorage.setItem('clientId', id); }
-      return id;
+  useEffect(() => {
+    let id = sessionStorage.getItem('clientId');
+    if (!id) {
+      id = Math.random().toString(36).substring(2, 10);
+      sessionStorage.setItem('clientId', id);
     }
-    return 'demo-client';
-  });
+    setClientId(id);
+  }, []);
 
   const { room, connectionStatus, createRoom, joinRoom, cancelRoom } = useRoomManagement(clientId);
   
@@ -332,12 +335,21 @@ export default function LajuApp() {
     }
   }, [room]);
   
+  if (!clientId) {
+    return <div className="app-container main-content"> <LoadingSpinner size={32}/> </div>; // Loading state until clientId is ready
+  }
+  
   if (room?.status === 'connected') return <ConnectedRoom room={room} connectionStatus={connectionStatus} />;
   if (room?.host_id === clientId && room?.status === 'waiting') return <WaitingRoom room={room} onCancel={cancelRoom} />;
 
   return (
     <div className="app-container">
-      <Head><title>Laju.io - Transfer File Cepat</title><meta name="viewport" content="width=device-width, initial-scale=1" /><link rel="icon" href="/favicon.ico" /></Head>
+      <Head>
+          <title>Laju.io - Transfer File Cepat & Ringan</title>
+          <meta name="description" content="Transfer file langsung antar perangkat tanpa melalui server secara real-time." />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
+      </Head>
       <Toaster position="bottom-center" />
       <div className="main-content">
         <div className="page-header"><h1 className="page-title">Laju.io</h1><p className="page-subtitle">Transfer file super cepat tanpa ribet. Langsung antar perangkat, aman dan mudah.</p></div>
