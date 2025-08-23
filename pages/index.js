@@ -18,7 +18,7 @@ const createThumbnail = (file) => {
         const canvas = document.createElement('canvas');
         const MAX_SIZE = 120;
         let { width, height } = img;
-        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }}
+        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }} 
         else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }}
         canvas.width = width;
         canvas.height = height;
@@ -356,10 +356,10 @@ export default function LajuApp() {
   return (
     <div className="app-container">
       <Head>
-        <title>Laju.io - Transfer File Cepat & Ringan</title>
-        <meta name="description" content="Transfer file langsung antar perangkat tanpa melalui server secara real-time." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+          <title>Laju.io - Transfer File Cepat & Ringan</title>
+          <meta name="description" content="Transfer file langsung antar perangkat tanpa melalui server secara real-time." />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
       </Head>
       <Toaster position="bottom-center" />
       <div className="main-content">
