@@ -86,7 +86,7 @@
 
   /* Connected Room */
   .connection-status {
-    @apply absolute top-4 right-4 bg-white/70 backdrop-blur-sm px-3 py-2 rounded-full shadow-md flex items-center gap-2 z-20;
+    @apply fixed top-4 right-4 bg-white/70 backdrop-blur-sm px-3 py-2 rounded-full shadow-md flex items-center gap-2 z-20;
   }
   .status-indicator {
     @apply w-2.5 h-2.5 rounded-full transition-colors;
@@ -96,19 +96,65 @@
   .status-disconnected { @apply bg-red-500; }
   
   .transfer-area { @apply relative w-full max-w-md; }
-  .drag-overlay { @apply absolute inset-0 bg-teal-500/20 border-4 border-dashed border-teal-600 rounded-2xl flex items-center justify-center text-teal-800 font-bold z-10; }
+  .drag-overlay { 
+    @apply absolute inset-0 bg-teal-500/20 border-4 border-dashed border-teal-600 rounded-2xl flex items-center justify-center text-teal-800 font-bold z-10;
+  }
   .upload-zone { @apply card w-full text-center p-8; }
-  .file-icon-area { @apply w-24 h-24 rounded-full flex items-center justify-center mb-4; }
+  .file-icon-area { 
+    @apply w-24 h-24 rounded-full flex items-center justify-center mb-4;
+  }
   
-  .progress-container { @apply w-full bg-gray-200 rounded-full h-4 my-4 overflow-hidden relative; }
-  .progress-bar { @apply h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-300; }
-  .progress-text { @apply absolute inset-0 flex items-center justify-center text-xs font-bold text-white; }
+  .progress-container { 
+    @apply w-full bg-gray-200 rounded-full h-4 my-4 overflow-hidden relative; 
+  }
+  .progress-bar { 
+    @apply h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-300; 
+  }
+  .progress-text { 
+    @apply absolute inset-0 flex items-center justify-center text-xs font-bold text-white; 
+  }
   
-  .file-preview { @apply w-32 h-32 object-cover rounded-lg shadow-md border-2 border-white; }
+  .file-preview { 
+    @apply w-32 h-32 object-cover rounded-lg shadow-md border-2 border-white; 
+  }
+  
+  /* Transfer History */
+  .transfer-history {
+    @apply mt-8 border-t pt-6 w-full max-w-4xl;
+  }
+  .history-item {
+    @apply bg-gray-50 rounded-lg p-3 text-sm;
+  }
+  .history-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+  
+  /* File Type Badges */
+  .file-badge {
+    @apply text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full;
+  }
+  
+  /* Connection Status Components */
+  .connection-info {
+    @apply flex items-center justify-between w-full px-4 py-2;
+  }
+  .status-icon {
+    @apply rounded-full p-1;
+  }
   
   /* Animasi */
-  .animate-slide-in { animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-  .animate-scale-in { animation: scaleIn 0.3s ease-out both; }
+  .animate-slide-in { 
+    animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; 
+  }
+  .animate-scale-in { 
+    animation: scaleIn 0.3s ease-out both; 
+  }
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
   
   @keyframes slideIn {
     0% { transform: translateY(-20px); opacity: 0; }
@@ -117,5 +163,34 @@
   @keyframes scaleIn {
     0% { transform: scale(0.95); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Utility Classes untuk Komponen Baru */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .connection-status {
+      @apply top-2 right-2 text-sm;
+    }
+    .room-code {
+      @apply text-2xl;
+    }
+    .action-grid {
+      @apply gap-4;
+    }
+    .card {
+      @apply p-4;
+    }
   }
 }
