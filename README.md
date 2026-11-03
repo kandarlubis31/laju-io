@@ -1,43 +1,64 @@
-# laju-io
+# Laju.io
 
-## Tentang Project
+Pindahkan file antar perangkat lewat browser, tanpa aplikasi dan tanpa akun.
 
-This is a Next.js project bootstrapped with create-next-app . First, run the development server: Open http://localhost:3000 with your browser to see the result. You can start editing the page by modifying pages/index.js . The page auto-updates as you edit the file. API routes can be accessed on http://localhost:3000/api/hello. This endpoint can be edited in pages/api/hello.js . The pages/api directory is mapped to /api/ . Files in this directory are treated as [API routes](h
+Satu orang membuat ruang, mendapat kode 4 karakter, lalu membagikannya. Siapa pun yang memasukkan
+kode itu langsung masuk ke ruang yang sama dan bisa mengunggah maupun mengunduh file di dalamnya.
+Tidak ada langkah daftar, tidak ada tautan yang kedaluwarsa diam-diam.
 
-## Tech Stack
+## Cara kerja
 
-Node.js; deps: @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, @supabase/supabase-js, jszip, lucide-react, next, qrcode.react, react; dev: autoprefixer, postcss, tailwindcss
+1. **Buat ruang** — server membuat kode 4 karakter (tanpa huruf yang mudah tertukar) dan menyimpan
+   sesi ruang di Supabase.
+2. **Bagikan kode** — kode ditampilkan sebagai teks dan QR, jadi bisa dibaca perangkat lain tanpa
+   mengetik.
+3. **Unggah** — klien meminta *presigned URL* ke `/api/generate-upload-url`, lalu mengirim file
+   langsung ke object storage. File tidak pernah melewati server Next.js.
+4. **Unduh** — daftar file di ruang diperbarui lewat channel Supabase, file bisa diunduh satu per
+   satu atau sekaligus sebagai ZIP (dibuat di browser dengan JSZip).
 
-## Struktur Utama
+Thumbnail dibuat di sisi klien lewat `canvas` (maksimal 120 px) sebelum unggah, supaya pratinjau
+gambar muncul cepat tanpa memuat file penuh.
 
-```
-pages/
-public/
-styles/
-.env
-.gitignore
-CONTEXT.md
-eslint.config.mjs
-jsconfig.json
-next.config.mjs
-note.ce
-package-lock.json
-package.json
-postcss.config.js
-README.md
-tailwind.config.js
+## Halaman & API
+
+| Rute | Fungsi |
+| :--- | :--- |
+| `/` | Antarmuka ruang: buat ruang, gabung ruang, daftar file, pratinjau |
+| `POST /api/create-room` | Membuat kode ruang baru untuk `hostId` |
+| `POST /api/generate-upload-url` | Membuat presigned URL unggah ke S3 |
+| `/api/hello` | Pemeriksaan sederhana bahwa API hidup |
+
+## Lingkungan
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_S3_BUCKET=
 ```
 
 ## Menjalankan
 
-- `npm run dev`
-- `npm run start`
-- `npm run build`
+```bash
+npm install
+npm run dev     # http://localhost:3000
+npm run build
+npm run start
+```
 
----
+## Stack
 
-*Generated: 2026-08-08 · Path: nodeJS\laju-io*
+Next.js 14 (Pages Router) · React 18 · Tailwind CSS 3 · Supabase (realtime + data ruang) ·
+AWS SDK v3 (`@aws-sdk/s3-request-presigner`) · JSZip · `qrcode.react` · `react-hot-toast`
 
----
+## Status
 
-Lihat `CONTEXT.md` di folder ini untuk detail arsitektur.
+Ruang bersifat sementara dan tanpa autentikasi: siapa pun yang memegang kode bisa masuk. Jangan
+pakai untuk berkas sensitif.
+
+## Lisensi
+
+Repository ini belum memuat berkas lisensi. Anggap semua hak dipegang penulis.
