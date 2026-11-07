@@ -9,13 +9,13 @@ Tidak ada langkah daftar, tidak ada tautan yang kedaluwarsa diam-diam.
 ## Cara kerja
 
 1. **Buat ruang** — server membuat kode 4 karakter (tanpa huruf yang mudah tertukar) dan menyimpan
-   sesi ruang di Supabase.
+ sesi ruang di Supabase.
 2. **Bagikan kode** — kode ditampilkan sebagai teks dan QR, jadi bisa dibaca perangkat lain tanpa
-   mengetik.
+ mengetik.
 3. **Unggah** — klien meminta *presigned URL* ke `/api/generate-upload-url`, lalu mengirim file
-   langsung ke object storage. File tidak pernah melewati server Next.js.
+ langsung ke object storage. File tidak pernah melewati server Next.js.
 4. **Unduh** — daftar file di ruang diperbarui lewat channel Supabase, file bisa diunduh satu per
-   satu atau sekaligus sebagai ZIP (dibuat di browser dengan JSZip).
+ satu atau sekaligus sebagai ZIP (dibuat di browser dengan JSZip).
 
 Thumbnail dibuat di sisi klien lewat `canvas` (maksimal 120 px) sebelum unggah, supaya pratinjau
 gambar muncul cepat tanpa memuat file penuh.
@@ -58,6 +58,14 @@ AWS SDK v3 (`@aws-sdk/s3-request-presigner`) · JSZip · `qrcode.react` · `reac
 
 Ruang bersifat sementara dan tanpa autentikasi: siapa pun yang memegang kode bisa masuk. Jangan
 pakai untuk berkas sensitif.
+
+---
+
+## English
+
+**Laju.io** moves files between devices through the browser, with no app and no account. One person creates a room, gets a four-character code, and shares it; anyone who enters the code can send or receive files.
+
+---
 
 ## Lisensi
 
