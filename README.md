@@ -9,13 +9,13 @@ Tidak ada langkah daftar, tidak ada tautan yang kedaluwarsa diam-diam.
 ## Cara kerja
 
 1. **Buat ruang** — server membuat kode 4 karakter (tanpa huruf yang mudah tertukar) dan menyimpan
- sesi ruang di Supabase.
+   sesi ruang di Supabase.
 2. **Bagikan kode** — kode ditampilkan sebagai teks dan QR, jadi bisa dibaca perangkat lain tanpa
- mengetik.
+   mengetik.
 3. **Unggah** — klien meminta *presigned URL* ke `/api/generate-upload-url`, lalu mengirim file
- langsung ke object storage. File tidak pernah melewati server Next.js.
+   langsung ke object storage. File tidak pernah melewati server Next.js.
 4. **Unduh** — daftar file di ruang diperbarui lewat channel Supabase, file bisa diunduh satu per
- satu atau sekaligus sebagai ZIP (dibuat di browser dengan JSZip).
+   satu atau sekaligus sebagai ZIP (dibuat di browser dengan JSZip).
 
 Thumbnail dibuat di sisi klien lewat `canvas` (maksimal 120 px) sebelum unggah, supaya pratinjau
 gambar muncul cepat tanpa memuat file penuh.
