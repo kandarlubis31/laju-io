@@ -59,6 +59,14 @@ AWS SDK v3 (`@aws-sdk/s3-request-presigner`) · JSZip · `qrcode.react` · `reac
 Ruang bersifat sementara dan tanpa autentikasi: siapa pun yang memegang kode bisa masuk. Jangan
 pakai untuk berkas sensitif.
 
+---
+
+## English
+
+**Laju.io** moves files between devices through the browser, with no app and no account. One person creates a room, gets a four-character code, and shares it; anyone who enters the code can send or receive files.
+
+---
+
 ## Lisensi
 
 Repository ini belum memuat berkas lisensi. Anggap semua hak dipegang penulis.
